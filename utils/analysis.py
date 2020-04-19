@@ -33,3 +33,24 @@ class AbsMovingAvg(MovingAvg):
         if (len(self.values) > self.size):
             p = self.values.pop(0)
             self.avg -= (abs(p) * 1.0 / self.size)
+
+
+class Derivative():
+    def __init__(self, width):
+        self.values = []
+        self.val = 0.0
+        self.width = width
+
+    def add(self, v):
+        self.values.append(v)
+        if (len(self.values) > self.width):
+            p = self.values.pop(0)
+        self.val = (self.values[-1] - self.values[0]) / len(self.values)
+
+    def value(self):
+        return self.val
+
+
+
+
+

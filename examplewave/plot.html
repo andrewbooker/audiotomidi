@@ -1,7 +1,8 @@
 <html>
 <body style="background-color: rgb(34,34,34);">
-<svg id="graph" height="900" width="1000">
+<svg id="graph" height="500" width="1000">
 </svg>
+<div id="key"></div>
 <script src="data.js"></script>
 <script>
 
@@ -55,8 +56,19 @@ function plot(data, baseColour) {
 	});
 }
 
+
+colours = [[255,255,255],[0,67,255],[255,0,0],[0,255,0],[255,255,0],[255,0,255],[0,255,255]]
+key = document.getElementById("key")
+
 Object.keys(data).forEach(function(k, i) {
-    plot(data[k], [255 - (i * 70), i * 70, 0]);
+    const rgb = colours[i];
+    plot(data[k], rgb);
+    key.appendChild((function(){
+        const e = document.createElement("div");
+        e.innerHTML = k;
+        e.setAttribute("style", "color:rgb(" + rgb.join(",") + ");");
+        return e;
+    })());
 });
 
 
