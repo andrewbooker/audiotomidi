@@ -5,7 +5,7 @@
 <script src="data.js"></script>
 <script>
 
-function plot(data) {
+function plot(data, baseColour) {
 	var gragh = document.getElementById("graph")
 
 	function toX(x) {
@@ -13,7 +13,7 @@ function plot(data) {
 	}
 
 	function toY(y) {
-		return 300 - (2 * y);
+		return 300 - (3 * y);
 	}
 
 	function pointAt(x, y, colour) {
@@ -49,11 +49,17 @@ function plot(data) {
 
 	var scale = 250;
     data.forEach(function(d, i) {
-		pointAt(i, scale * d, "rgb(100,200," + toColour(d * 6) + ")");
+        const rgb = baseColour.slice();
+        rgb[2] += toColour(d * 6);
+		pointAt(i, scale * d, "rgb(" + rgb.join(",") + ")");
 	});
 }
 
-plot(data.original);
+Object.keys(data).forEach(function(k, i) {
+    plot(data[k], [255 - (i * 70), i * 70, 0]);
+});
+
+
 
 </script>
 </body>
