@@ -1,0 +1,60 @@
+<html>
+<body style="background-color: rgb(34,34,34);">
+<svg id="graph" height="900" width="1000">
+</svg>
+<script src="data.js"></script>
+<script>
+
+function plot(data) {
+	var gragh = document.getElementById("graph")
+
+	function toX(x) {
+		return 10 + (0.4 * x);
+	}
+
+	function toY(y) {
+		return 300 - (2 * y);
+	}
+
+	function pointAt(x, y, colour) {
+		const point = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        const r = 0.3;
+
+		point.setAttribute("cx", toX(x));
+		point.setAttribute("cy", toY(y));
+		point.setAttribute("r", r);
+		point.setAttribute("stroke", colour);data
+		point.setAttribute("stroke-width", r);
+		point.setAttribute("fill", colour);
+
+		graph.appendChild(point);
+	}
+
+	
+	function axis(endPoint) {
+		var a = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		
+		a.setAttribute("x1", toX(-endPoint.x));
+		a.setAttribute("y1", toY(-endPoint.y));
+		a.setAttribute("x2", toX(endPoint.x));data
+		a.setAttribute("y2", toY(endPoint.y));
+		a.setAttribute("style", "stroke:" + endPoint.colour + ";stroke-width:2");
+
+		graph.appendChild(a);
+	}
+
+	function toColour(v) {
+		return Math.floor(Math.abs(v * 255));
+	}
+
+	var scale = 250;
+    data.forEach(function(d, i) {
+		pointAt(i, scale * d, "rgb(100,200," + toColour(d * 6) + ")");
+	});
+}
+
+plot(data.original);
+
+</script>
+</body>
+</html>
