@@ -51,6 +51,34 @@ class Derivative():
         return self.val
 
 
+class Threshold():
+    def __init__(self, thesholdFn):
+        self.fn = thesholdFn
+        self.val = 0;
 
+    def add(self, v):
+        self.val = v
+
+    def value(self):
+        return 1.0 if self.val > self.fn() else 0
+
+
+class SchmittHysteresis():
+    def __init__(self, thesholdOnFn, thesholdOffFn):
+        self.fnOn = thesholdOnFn
+        self.fnOff = thesholdOffFn
+        self.val = 0;
+        self.state = 0;
+
+    def add(self, v):
+        self.val = v
+
+    def value(self):
+        if self.state == 0 and self.val > self.fnOn():
+            self.state = 1
+        elif self.state == 1 and self.val < self.fnOff():
+            self.state = 0
+
+        return self.state
 
 
