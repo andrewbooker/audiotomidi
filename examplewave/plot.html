@@ -1,20 +1,21 @@
 <html>
-<body style="background-color: rgb(34,34,34);">
-<svg id="graph" height="500" width="1000">
+<body style="background-color: black;">
+<svg id="graph" height="500" width="1600" style="background-color: rgb(34,34,34);">
 </svg>
 <div id="key"></div>
 <script src="data.js"></script>
 <script>
 
 function plot(data, baseColour) {
-	var gragh = document.getElementById("graph")
+	const graph = document.getElementById("graph");
+    const xScale = 1.0 * graph.getAttribute("width") / data.length;
 
 	function toX(x) {
-		return 10 + (0.4 * x);
+		return 10 + (xScale * x);
 	}
 
 	function toY(y) {
-		return 300 - (3 * y);
+		return 300 - (2 * y);
 	}
 
 	function pointAt(x, y, colour) {
@@ -33,7 +34,7 @@ function plot(data, baseColour) {
 
 	
 	function axis(endPoint) {
-		var a = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		const a = document.createElementNS("http://www.w3.org/2000/svg", "line");
 		
 		a.setAttribute("x1", toX(-endPoint.x));
 		a.setAttribute("y1", toY(-endPoint.y));
