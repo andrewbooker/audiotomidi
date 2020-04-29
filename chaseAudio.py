@@ -1,28 +1,30 @@
 #!/usr/bin/env python
 
-import sys
 import os
-parentDir = os.path.dirname(os.getcwd())
-sys.path.append(parentDir)
-if not os.path.exists(os.path.join(parentDir, "mediautils")):
-    print("mediautils library not found.") 
-    print("please clone github.com/andrewbooker/mediautils.git into %s" % parentDir)
-    exit()
+import sys
+def checkImport(lib):
+    parentDir = os.path.dirname(os.getcwd())
+    sys.path.append(parentDir)
+    if not os.path.exists(os.path.join(parentDir, lib)):
+        print("%s library not found." % lib)
+        print("please clone github.com/andrewbooker/%s.git into %s" % (lib, parentDir))
+        exit()
+
+checkImport("mediautils")
 from mediautils.usbdevices import UsbMidiDevices, MidiOut
 
-import random
+
 class Consumer():
     def __init__(self, midiOut):
         self.midiOut = midiOut
-        self.note = 64
-        self.velocity = 99
+        self.note = 0
 
-    def on(self):
-        self.midiOut.note_on(self.note, self.velocity, 0)
+    def on(self, velocity):
+        self.note = 64 + (int(velocity * 10000) % 30)
+        self.midiOut.note_on(self.note, int(26 + (velocity * 100)), 0)
 
     def off(self):
         self.midiOut.note_off(self.note, 0, 0)
-        self.note = random.randint(48, 79)
         
 from utils.analysis import AbsMovingAvg, Threshold
 class Chaser():
@@ -39,7 +41,7 @@ class Chaser():
         self.thrOff.add(self.avg.value())
 
         if self.thrOn.value() == 1 and self.state == 0:
-            self.consumer.on()
+            self.consumer.on(self.thrOn.overshoot())
             self.state = 1
         elif self.thrOff.value() == 0 and self.state == 1:
             self.state = 0

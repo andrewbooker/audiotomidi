@@ -62,6 +62,11 @@ class Threshold():
     def value(self):
         return 1.0 if self.val > self.fn() else 0
 
+    def overshoot(self):
+        if self.value() == 0:
+            return 0.0
+        return (self.val - self.fn()) / (1.0 - self.fn())
+
 
 class SchmittHysteresis():
     def __init__(self, thesholdOnFn, thesholdOffFn):
