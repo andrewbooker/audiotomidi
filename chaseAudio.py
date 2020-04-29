@@ -12,7 +12,16 @@ def checkImport(lib):
 
 checkImport("mediautils")
 from mediautils.usbdevices import UsbMidiDevices, MidiOut
+checkImport("compositionutils")
+from compositionutils.scale import Scale, Modes
 
+tonic = sys.argv[1] if len(sys.argv) > 1 else "C"
+mode = sys.argv[2] if len(sys.argv) > 2 else "aeolian"
+
+noteSpan = 15
+scale = Scale(noteSpan, tonic, Modes.named(mode))
+
+print(tonic, mode)
 
 class Consumer():
     def __init__(self, midiOut):
@@ -20,7 +29,7 @@ class Consumer():
         self.note = 0
 
     def on(self, velocity):
-        self.note = 64 + (int(velocity * 10000) % 30)
+        self.note = scale.noteFrom(int(velocity * 10000) % noteSpan)
         self.midiOut.note_on(self.note, int(26 + (velocity * 100)), 0)
 
     def off(self):
