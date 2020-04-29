@@ -2,7 +2,12 @@
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.getcwd()))
+parentDir = os.path.dirname(os.getcwd())
+sys.path.append(parentDir)
+if not os.path.exists(os.path.join(parentDir, "mediautils")):
+    print("mediautils library not found.") 
+    print("please clone github.com/andrewbooker/mediautils.git into %s" % parentDir)
+    exit()
 from mediautils.usbdevices import UsbMidiDevices, MidiOut
 
 import random
@@ -69,6 +74,7 @@ print("press 'q' to exit")
 while not shouldStop.is_set():
     c = readchar.readchar()
     if c == "q":
+        print("stopping...")
         shouldStop.set()
         thread.join()
 
