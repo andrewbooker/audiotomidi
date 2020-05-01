@@ -2,9 +2,9 @@
 
 import os
 import sys
+parentDir = os.path.dirname(os.getcwd())
+sys.path.append(parentDir)
 def checkImport(lib):
-    parentDir = os.path.dirname(os.getcwd())
-    sys.path.append(parentDir)
     if not os.path.exists(os.path.join(parentDir, lib)):
         print("%s library not found." % lib)
         print("please clone github.com/andrewbooker/%s.git into %s" % (lib, parentDir))
@@ -29,16 +29,17 @@ class Consumer():
         self.note = 0
 
     def on(self, velocity):
-        self.note = scale.noteFrom(int(velocity * 10000) % noteSpan)
+        self.note = scale.noteFrom(int(velocity * 100) % noteSpan)
         self.midiOut.note_on(self.note, int(26 + (velocity * 100)), 0)
 
     def off(self):
         self.midiOut.note_off(self.note, 0, 0)
         
-from utils.analysis import AbsMovingAvg, Threshold
+from utils.analysis import AbsMovingAvg, Threshold, Derivative
 class Chaser():
     def __init__(self, consumer):
         self.avg = AbsMovingAvg(44)
+        self.deriv = Derivative(2)
         self.thrOn = Threshold(lambda: 0.04)
         self.thrOff = Threshold(lambda: 0.001)
         self.state = 0
@@ -48,11 +49,14 @@ class Chaser():
         self.avg.add(v)
         self.thrOn.add(self.avg.value())
         self.thrOff.add(self.avg.value())
+        self.deriv.add(self.avg.value())
 
         if self.thrOn.value() == 1 and self.state == 0:
-            self.consumer.on(self.thrOn.overshoot())
             self.state = 1
-        elif self.thrOff.value() == 0 and self.state == 1:
+        elif self.deriv.value() < 0 and self.state == 1:
+            self.consumer.on(self.thrOn.overshoot())
+            self.state = 2
+        elif self.thrOff.value() == 0 and self.state == 2:
             self.state = 0
             self.consumer.off()
 
