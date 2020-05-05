@@ -13,16 +13,17 @@ def checkImport(lib):
 
 checkImport("mediautils")
 from mediautils.usbdevices import UsbMidiDevices, MidiOut
+
 checkImport("compositionutils")
 from compositionutils.scale import Scale, Modes
 
 tonic = sys.argv[1] if len(sys.argv) > 1 else "C"
 mode = sys.argv[2] if len(sys.argv) > 2 else "aeolian"
+print(tonic, mode)
 
 noteSpan = 15
 scale = Scale(noteSpan, tonic, Modes.named(mode))
 
-print(tonic, mode)
 
 class Consumer():
     def __init__(self, midiOut):
@@ -35,7 +36,6 @@ class Consumer():
 
     def off(self):
         self.midiOut.note_off(self.note, 0, 0)
-
 
 
 import time
@@ -51,7 +51,7 @@ def audioCapture(device, shouldStop, callback):
 midiDevices = UsbMidiDevices()
 midiOut = MidiOut(midiDevices)
 consumer = Consumer(midiOut.io)
-chaser = Chaser(consumer)
+chaser = Chaser(consumer, 0.04, 0.0039)
 callback = lambda indata, frames, t, status: [chaser.add(v[0]) for v in indata]
 
 import readchar
@@ -69,7 +69,6 @@ while not shouldStop.is_set():
         shouldStop.set()
         thread.join()
 
-del consumer
 del midiOut
 del midiDevices
 print("done")

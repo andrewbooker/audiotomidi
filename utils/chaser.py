@@ -1,11 +1,11 @@
 
 from utils.analysis import AbsMovingAvg, Threshold, Derivative
 class Chaser():
-    def __init__(self, consumer):
+    def __init__(self, consumer, high, low):
         self.avg = AbsMovingAvg(44)
         self.deriv = Derivative(2)
-        self.thrOn = Threshold(lambda: 0.04)
-        self.thrOff = Threshold(lambda: 0.0039)
+        self.thrOn = Threshold(lambda: high)
+        self.thrOff = Threshold(lambda: low)
         self.state = 0
         self.consumer = consumer
         
