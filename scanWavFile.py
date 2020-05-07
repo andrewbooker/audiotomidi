@@ -14,7 +14,7 @@ def checkImport(lib):
         exit()
 
 checkImport("mediautils")
-from mediautils.usbdevices import UsbMidiDevices, MidiOut
+from mediautils.mididevices import UsbMidiDevices, MidiOut
 
 
 ## ===== composer =====

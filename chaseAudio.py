@@ -12,7 +12,7 @@ def checkImport(lib):
         exit()
 
 checkImport("mediautils")
-from mediautils.usbdevices import UsbMidiDevices, MidiOut
+from mediautils.mididevices import UsbMidiDevices, MidiOut
 
 checkImport("compositionutils")
 from compositionutils.scale import Scale, Modes
