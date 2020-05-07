@@ -27,12 +27,13 @@ scale = Scale(noteSpan, tonic, Modes.named(mode))
 
 
 class Consumer():
-    def __init__(self, midiOut):
+    def __init__(self, midiOut, register):
         self.midiOut = midiOut
         self.note = 0
+        self.register = register
 
     def on(self, velocity):
-        self.note = scale.noteFrom(int(velocity * 100) % noteSpan)
+        self.note = scale.noteFrom(int(velocity * 100) % noteSpan) + (12 * self.register)
         self.midiOut.note_on(self.note, int(26 + (velocity * 100)), 0)
 
     def off(self):
@@ -41,9 +42,9 @@ class Consumer():
 
 import time
 import sounddevice as sd
-def audioCapture(device, shouldStop, callback):
+def audioCapture(deviceIdx, channels, shouldStop, callback):
     print("starting audio capture")
-    with sd.InputStream(samplerate=44100.0, device=device, channels=1, callback=callback, blocksize=44) as stream:
+    with sd.InputStream(samplerate=44100.0, device=deviceIdx, channels=channels, callback=callback, blocksize=44) as stream:
         stream.start()
         while not shouldStop.is_set():
             time.sleep(1)
@@ -51,30 +52,41 @@ def audioCapture(device, shouldStop, callback):
 
 midiDevices = UsbMidiDevices()
 midiOut = MidiOut(midiDevices)
-consumer = Consumer(midiOut.io)
-chaser = Chaser(consumer, 0.04, 0.0039)
-callback = lambda indata, frames, t, status: [chaser.add(v[0]) for v in indata]
 
-devices = UsbAudioDevices()
-audioDevice = [k for k in devices.keys()][0]
-print("using %s" % devices[audioDevice])
+audioDevices = UsbAudioDevices()
+aidx = [k for k in audioDevices.keys()][0]
+audioDevice = audioDevices[aidx]
+print("using", audioDevice)
+channelCount = audioDevice[1]
+
+import threading
+shouldStop = threading.Event()
+
+
+consumerTop = Consumer(midiOut.io, 1)
+consumerBass = Consumer(midiOut.io, -1)
+chaserTop = Chaser(consumerTop, 0.04, 0.0039)
+chaserBass = Chaser(consumerBass, 0.04, 0.0039)
+chasers = [chaserTop, chaserBass]
+cs = range(channelCount)
+callback = lambda indata, frames, t, status: [[chasers[i].add(v[i]) for i in cs] for v in indata]
+
+
+threads = []
+
+threads.append(threading.Thread(target=audioCapture, args=(aidx,channelCount,shouldStop,callback,), daemon=True))
+[t.start() for t in threads]
 
 import readchar
-import threading
-
-shouldStop = threading.Event()
-thread = threading.Thread(target=audioCapture, args=(audioDevice,shouldStop,callback,), daemon=True)
-thread.start()
-
 print("press 'q' to exit")
 while not shouldStop.is_set():
     c = readchar.readchar()
     if c == "q":
         print("stopping...")
         shouldStop.set()
-        thread.join()
+        [t.join() for t in threads]
 
-midiOut.io.write_short(0xB0, 0x7B, 0)
+midiOut.io.write_short(0xb0, 0x7b, 0) # all notes off
 
 del midiOut
 del midiDevices
